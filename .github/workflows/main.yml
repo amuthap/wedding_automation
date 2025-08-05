@@ -30,8 +30,9 @@ jobs:
           
       - name: commit files
         run: |
-          git config --local amutha.b.87@gmail.com "action@github.com"
-          git config --local amuthap "GitHub Action"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
           git add -A
           git diff-index --quiet HEAD || (git commit -a -m "updated logs" --allow-empty)
           
