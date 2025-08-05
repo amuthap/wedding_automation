@@ -13,6 +13,13 @@ jobs:
       - name: checkout repo content
         uses: actions/checkout@v2 # checkout the repository content to github runner
 
+        
+      - name: pull latest changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git pull origin master --rebase
+
       - name: setup python
         uses: actions/setup-python@v4
         with:
@@ -30,8 +37,7 @@ jobs:
           
       - name: commit files
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+       
           git pull origin master --rebase
           git add -A
           git diff-index --quiet HEAD || git commit -m "updated logs"
