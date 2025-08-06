@@ -185,15 +185,15 @@ def main():
             try:
                 base.save(out_path)
                 print(f"✅ Created image: {out_path}")
-                out_url = upload_to_picnie(out_path)
-                if not out_url:
-                    print(f"❌ Upload failed for {name}")
-                else:
-                    print(f"✅ Uploaded to Picnie: {out_url}")
+                #out_url = upload_to_picnie(out_path)
+                #if not out_url:
+                #    print(f"❌ Upload failed for {name}")
+                #else:
+                #    print(f"✅ Uploaded to Picnie: {out_url}")
                    # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
                     whatsapp_number = row.get("WhatsApp")
                     if whatsapp_number:
-                        send_whatsapp_message(whatsapp_number, out_url, name)
+                        send_whatsapp_message(whatsapp_number, out_path, name)
                     else:
                         print(f"⚠️ No WhatsApp number for {name}")
             except Exception as e:
