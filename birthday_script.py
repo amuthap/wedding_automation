@@ -16,9 +16,13 @@ PICNIE_UPLOAD_URL = "https://picnie.com/api/v1/upload-asset"
 
 # Font files
 
-FONT_NAME_PATH = "arialbd.ttf"
-FONT_ADDRESS_PATH = "arial.ttf"
-FONT_ROLE_PATH = "arial.ttf"
+# Font files
+FONT_NAME_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIALBD.TTF")
+FONT_Address_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIAL.TTF")
+FONT_ROLE_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIAL.TTF")
+#FONT_NAME_PATH = "arialbd.ttf"
+#FONT_ADDRESS_PATH = "arial.ttf"
+#FONT_ROLE_PATH = "arial.ttf"
 
 # Font sizes
 SIZE_NAME = 36
