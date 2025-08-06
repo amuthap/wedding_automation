@@ -191,11 +191,11 @@ def main():
                 #else:
                 #    print(f"✅ Uploaded to Picnie: {out_url}")
                    # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
-                    whatsapp_number = row.get("WhatsApp")
-                    if whatsapp_number:
-                        send_whatsapp_message(whatsapp_number, out_path, name)
-                    else:
-                        print(f"⚠️ No WhatsApp number for {name}")
+                whatsapp_number = row.get("WhatsApp")
+                if whatsapp_number:
+                    send_whatsapp_message(whatsapp_number, out_path, name)
+                else:
+                    print(f"⚠️ No WhatsApp number for {name}")
             except Exception as e:
                 print(f"❌ Failed to save image for {name}: {e}")
 
