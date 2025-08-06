@@ -39,7 +39,9 @@ jobs:
       - name: execute py script
         env:
           SOME_SECRET: ${{ secrets.SOME_SECRET }}
-        run: python scrape_names.py
+        run: | 
+          python scrape_names.py
+          python birthday_script.py
 
       - name: commit files
         run: |
