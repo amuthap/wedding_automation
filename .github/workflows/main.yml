@@ -3,7 +3,7 @@ name: run main.py
 on:
   workflow_dispatch:
   schedule:
-    - cron: '47 14 * * *' # At 00:05 on everyday
+    - cron: '47 14 * * *' # At 07:47 PM IST every day
 
 jobs:
   build:
@@ -11,49 +11,43 @@ jobs:
     steps:
 
       - name: checkout repo content
-        uses: actions/checkout@v2 # checkout the repository content to github runner
+        uses: actions/checkout@v2
 
-        
-      - name: pull latest changes
+      - name: pull latest changes (keep local)
         run: |
-           git config --local user.email "action@github.com"
-           git config --local user.name "GitHub Action"
-    
-           # Ensure we're on the right branch
-           git checkout main
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
 
-           # Set merge strategy to always favor local changes
-           git pull origin main --rebase --strategy-option=ours || \
-           (git rebase --abort && echo "Conflict detected, using ours strategy")
+          git checkout main
 
-           # Just in case conflicts are still there, force overwrite
-           git fetch origin
-           git reset --hard origin/main
+          git pull origin main --rebase --strategy-option=ours || \
+          (git rebase --abort && echo "Conflict detected, using ours strategy")
+
+          git fetch origin
+          git reset --hard origin/main
 
       - name: setup python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9' # install the python version needed
-          
+          python-version: '3.9'
+
       - name: install python packages
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          
-      - name: execute py script # run main.py
+
+      - name: execute py script
         env:
           SOME_SECRET: ${{ secrets.SOME_SECRET }}
         run: python scrape_names.py
-          
+
       - name: commit files
         run: |
-       
-          git pull origin main --rebase
           git add -A
           git diff-index --quiet HEAD || git commit -m "updated logs"
 
       - name: push changes
         uses: ad-m/github-push-action@v0.6.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN  }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: main
