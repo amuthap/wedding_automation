@@ -189,7 +189,8 @@ def main():
                     print(f"❌ Upload failed for {name}")
                 else:
                     print(f"✅ Uploaded to Picnie: {out_url}")
-                    whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
+                   # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
+                     whatsapp_number = row.get("WhatsApp")
                     if whatsapp_number:
                         send_whatsapp_message(whatsapp_number, out_url, name)
                     else:
