@@ -16,7 +16,7 @@ PICNIE_UPLOAD_URL = "https://picnie.com/api/v1/upload-asset"
 
 # Font files
 FONT_NAME_PATH = os.path.join(os.path.dirname(__file__), "fonts", "arialbd.ttf")
-FONT_Address_PATH = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
+FONT_ADDRESS_PATH = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
 FONT_ROLE_PATH = os.path.join(os.path.dirname(__file__), "fonts", "arial.ttf")
 #FONT_NAME_PATH = "arialbd.ttf"
 #FONT_ADDRESS_PATH = "arial.ttf"
