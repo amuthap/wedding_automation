@@ -16,9 +16,19 @@ jobs:
         
       - name: pull latest changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git pull origin master --rebase
+           git config --local user.email "action@github.com"
+           git config --local user.name "GitHub Action"
+    
+           # Ensure we're on the right branch
+           git checkout master
+
+           # Set merge strategy to always favor local changes
+           git pull origin master --rebase --strategy-option=ours || \
+           (git rebase --abort && echo "Conflict detected, using ours strategy")
+
+           # Just in case conflicts are still there, force overwrite
+           git fetch origin
+           git reset --hard origin/master
 
       - name: setup python
         uses: actions/setup-python@v4
