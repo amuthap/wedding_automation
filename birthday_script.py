@@ -191,7 +191,7 @@ def main():
                 print(f"✅ Created image: {out_path}")
                 out_url = "https://github.com/amuthap/wedding_automation/blob/main/"+out_path
                 print(f"✅ Created image: {out_url}")
-                #out_url = upload_to_picnie(out_path)
+                out_url = upload_to_picnie(out_path)
                 #if not out_url:
                 #    print(f"❌ Upload failed for {name}")
                 #else:
