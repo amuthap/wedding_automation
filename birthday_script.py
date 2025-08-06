@@ -189,6 +189,7 @@ def main():
             try:
                 base.save(out_path)
                 print(f"✅ Created image: {out_path}")
+                out_url = "https://github.com/amuthap/wedding_automation/blob/main/"+out_path
                 #out_url = upload_to_picnie(out_path)
                 #if not out_url:
                 #    print(f"❌ Upload failed for {name}")
@@ -197,7 +198,7 @@ def main():
                    # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
                 whatsapp_number = row.get("WhatsApp") or "9789365651"
                 if whatsapp_number:
-                    send_whatsapp_message(whatsapp_number, out_path, name)
+                    send_whatsapp_message(whatsapp_number, out_url, name)
                 else:
                     print(f"⚠️ No WhatsApp number for {name}")
             except Exception as e:
