@@ -20,15 +20,15 @@ jobs:
            git config --local user.name "GitHub Action"
     
            # Ensure we're on the right branch
-           git checkout master
+           git checkout main
 
            # Set merge strategy to always favor local changes
-           git pull origin master --rebase --strategy-option=ours || \
+           git pull origin main --rebase --strategy-option=ours || \
            (git rebase --abort && echo "Conflict detected, using ours strategy")
 
            # Just in case conflicts are still there, force overwrite
            git fetch origin
-           git reset --hard origin/master
+           git reset --hard origin/main
 
       - name: setup python
         uses: actions/setup-python@v4
@@ -48,7 +48,7 @@ jobs:
       - name: commit files
         run: |
        
-          git pull origin master --rebase
+          git pull origin main --rebase
           git add -A
           git diff-index --quiet HEAD || git commit -m "updated logs"
 
@@ -56,4 +56,4 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN  }}
-          branch: master
+          branch: main
