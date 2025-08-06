@@ -196,7 +196,7 @@ def main():
                 #else:
                 #    print(f"✅ Uploaded to Picnie: {out_url}")
                    # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
-                whatsapp_number = row.get("WhatsApp") or "9789365651"
+                whatsapp_number = row.get("WhatsApp") or "9159520924"
                 if whatsapp_number:
                     send_whatsapp_message(whatsapp_number, out_url, name)
                 else:
