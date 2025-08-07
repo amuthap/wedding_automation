@@ -101,11 +101,18 @@ def send_whatsapp_message(phone, image_path, name):
     except Exception as e:
         print(f"❌ WhatsApp send failed for {name}: {e}")
         return False
-
+def delete_files_in_directory(directory_path):
+        """Deletes all files within a specified directory."""
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted: {file_path}")
 # ─── Main ─────────────────────────────────────────────────────────────────────
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-
+    delete_files_in_directory(OUTPUT_DIR)
+    
     font_name = ImageFont.truetype(FONT_NAME_PATH, SIZE_NAME)
     font_address = ImageFont.truetype(FONT_ADDRESS_PATH, SIZE_ADDRESS)
     font_role = ImageFont.truetype(FONT_ROLE_PATH, SIZE_ROLE)
@@ -199,7 +206,7 @@ def main():
                 #else:
                 #    print(f"✅ Uploaded to Picnie: {out_url}")
                    # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
-                whatsapp_number = row.get("WhatsApp") or "9159520924"
+                whatsapp_number = row.get("WhatsApp") 
                 if whatsapp_number:
                     send_whatsapp_message(whatsapp_number, out_url, name)
                 else:
