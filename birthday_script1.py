@@ -37,6 +37,26 @@ PHOTO_X, PHOTO_Y = 652, 362
 LINE_SPACING = 8
 TEXT_MARGIN = 15
 
+# WhatsApp API
+API_URL = "https://app.d4digitalsolutions.com/send-media"
+API_KEY = "w96Yx9YgUxaIfFQPKJNr2HmPTSpIjC"
+SENDER_NUMBER = "919150281224"
+
+# Group IDs (no @g.us)
+GROUP_IDS = [
+    "120363314164316321","120363202664832172","120363183272810504",
+    "919445298001-1532168871","919788864442-1632333227","919842694845-1422978468",
+    "919942904575-1570156592","919842118542-1487664244","120363198539639457",
+    "917010153530-1573039790","919894744499-1626851462","919360399990-1606973063",
+]
+
+GROUP_CAPTION = (
+    "இனிய இல்லறம் மேலும் சிறக்க இணையருக்கு வாழ்த்து. இனிய திருமண நாள் வாழ்த்துகள்\n\n"
+    "https://rotasmart.club/greetings/w/\n\n"
+    "Greetings from\nRtn.PHF.PP.SRINIVASAN RAMDOSS \nDistrict Chairman-Greetings\n2025-26"
+)
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 def format_today():
     now = datetime.now()
@@ -70,10 +90,7 @@ def upload_to_picnie(image_path):
     return response_data.get('image_url')
 
 def send_whatsapp_message(phone, image_path, name):
-    API_URL = "https://app.d4digitalsolutions.com/send-media"
-    API_KEY = "w96Yx9YgUxaIfFQPKJNr2HmPTSpIjC"
-    SENDER_NUMBER = "919150281224"
-
+   
     caption = (
         f"Dear *Rtn.{name}*, \n\n"
         "Wishing you a very Happy Anniversary and a wonderful year ahead! "
@@ -101,6 +118,20 @@ def send_whatsapp_message(phone, image_path, name):
     except Exception as e:
         print(f"❌ WhatsApp send failed for {name}: {e}")
         return False
+    
+def send_group_media(group_id, image_url, caption):
+    data = {
+        "api_key": API_KEY,
+        "sender": SENDER_NUMBER,
+        "number": f"{group_id}@g.us",
+        "media_type": "image",
+        "caption": caption,
+        "url": image_url,
+    }
+    r = requests.post(API_URL, data=data, timeout=45)
+    r.raise_for_status()
+    return True
+
 def delete_files_in_directory(directory_path):
         """Deletes all files within a specified directory."""
         for filename in os.listdir(directory_path):
@@ -213,6 +244,16 @@ def main():
                     print(f"⚠️ No WhatsApp number for {name}")
             except Exception as e:
                 print(f"❌ Failed to save image for {name}: {e}")
+                
+            # Post to all groups
+            for gid in GROUP_IDS:
+                try:
+                    send_group_media(gid, out_url, GROUP_CAPTION)
+                    print(f"✅ Group sent: {gid}")
+                    time.sleep(0.5)  # mild rate limit cushion
+                except Exception as e:
+                    print(f"❌ Group send failed ({gid}): {e}")
+        
 
     print("🎉 All done!")
 
