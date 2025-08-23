@@ -1,49 +1,66 @@
-import csv
-import os
-import requests
+# anniv_script.py  — sends to individual + groups
+import csv, os, re, time, requests
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 
-# ─── Configuration ────────────────────────────────────────────────────────────
+# ---- Config ----
 TEMPLATE_PATH = "template.png"
 CSV_PATH = "our_team_details.csv"
-IMAGES_DIR = "images"
 OUTPUT_DIR = "output"
 
-# Picnie API configuration (for uploading only)
+# Picnie
 PICNIE_API_KEY = "$U63b6a6bf2d13775853e1dba410ffb4cb"
 PICNIE_UPLOAD_URL = "https://picnie.com/api/v1/upload-asset"
 
-# Font files
+# Fonts
+FONT_NAME_PATH = "arialbd.ttf"
+FONT_ADDRESS_PATH = "arial.ttf"
+FONT_ROLE_PATH = "arial.ttf"
+SIZE_NAME, SIZE_ADDRESS, SIZE_ROLE = 36, 30, 28
 
-# Font files
-FONT_NAME_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIALBD.TTF")
-FONT_ADDRESS_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIAL.TTF")
-FONT_ROLE_PATH = os.path.join(os.path.dirname(__file__), "Fonts", "ARIAL.TTF")
-#FONT_NAME_PATH = "arialbd.ttf"
-#FONT_ADDRESS_PATH = "arial.ttf"
-#FONT_ROLE_PATH = "arial.ttf"
-
-# Font sizes
-SIZE_NAME = 36
-SIZE_ADDRESS = 30
-SIZE_ROLE = 28
-
-# Profile-photo size & position
+# Photo placement
 PHOTO_W, PHOTO_H = 364, 369
 PHOTO_X, PHOTO_Y = 652, 362
+LINE_SPACING, TEXT_MARGIN = 8, 15
 
-# Spacing
-LINE_SPACING = 8
-TEXT_MARGIN = 15
+# WhatsApp API
+API_URL = "https://app.d4digitalsolutions.com/send-media"
+API_KEY = "w96Yx9YgUxaIfFQPKJNr2HmPTSpIjC"
+SENDER_NUMBER = "919150281224"
 
-# ─── Helpers ──────────────────────────────────────────────────────────────────
+# Group IDs (no @g.us)
+GROUP_IDS = [
+    "120363314164316321","120363202664832172","120363183272810504",
+    "919445298001-1532168871","919788864442-1632333227","919842694845-1422978468",
+    "919942904575-1570156592","919842118542-1487664244","120363198539639457",
+    "917010153530-1573039790","919894744499-1626851462","919360399990-1606973063",
+]
+
+GROUP_CAPTION = (
+    "இனிய இல்லறம் மேலும் சிறக்க இணையருக்கு வாழ்த்து. இனிய திருமண நாள் வாழ்த்துகள்\n\n"
+    "https://rotasmart.club/greetings/w/\n\n"
+    "Greetings from\nRtn.PHF.PP.SRINIVASAN RAMDOSS \nDistrict Chairman-Greetings\n2025-26"
+)
+
+# ---- Helpers ----
 def format_today():
     now = datetime.now()
     return f"{now.month:02d}/{now.day:02d}/{now.year}"
 
+def normalize_date(date_str):
+    parts = date_str.strip().split("/")
+    if len(parts) == 3:
+        return f"{int(parts[0])}/{int(parts[1])}/{parts[2]}"
+    return date_str.strip()
+
+def digits_only(s: str) -> str:
+    d = re.sub(r"\D", "", s or "")
+    if len(d) > 10:
+        d = d[-10:]  # keep last 10 for IN
+    return d
+
 def download_image(url, dest_path):
-    resp = requests.get(url)
+    resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     with open(dest_path, "wb") as f:
         f.write(resp.content)
@@ -57,23 +74,14 @@ def draw_multiline_centered(draw, lines, x_center, y_start, fonts, spacing):
         y += h + spacing
 
 def upload_to_picnie(image_path):
-    headers = {
-        'Authorization': PICNIE_API_KEY
-    }
-    files = {
-        'image': open(image_path, 'rb')
-    }
-    response = requests.post(PICNIE_UPLOAD_URL, headers=headers, files=files)
-    print("Upload Status Code:", response.status_code)
-    print("Upload Response:", response.text)
-    response_data = response.json()
-    return response_data.get('image_url')
+    headers = {'Authorization': PICNIE_API_KEY}
+    with open(image_path, "rb") as f:
+        files = {'image': f}
+        r = requests.post(PICNIE_UPLOAD_URL, headers=headers, files=files, timeout=45)
+    r.raise_for_status()
+    return r.json().get("image_url", "")
 
-def send_whatsapp_message(phone, image_path, name):
-    API_URL = "https://app.d4digitalsolutions.com/send-media"
-    API_KEY = "w96Yx9YgUxaIfFQPKJNr2HmPTSpIjC"
-    SENDER_NUMBER = "919150281224"
-
+def send_whatsapp_message(phone_digits, image_url, name):
     caption = (
         f"Dear *Rtn.{name}*, \n\n"
         "Wishing you a very Happy Anniversary and a wonderful year ahead! "
@@ -83,59 +91,45 @@ def send_whatsapp_message(phone, image_path, name):
         "Phone No: +91 98940 45150\n"
         "2025-26"
     )
-
     data = {
-        'api_key': API_KEY,
-        'sender': SENDER_NUMBER,
-        'number': f"91{phone}",
-        'media_type': 'image',
-        'caption': caption,
-        'url': image_path  # must be a valid public image URL
+        "api_key": API_KEY,
+        "sender": SENDER_NUMBER,
+        "number": f"91{phone_digits}",
+        "media_type": "image",
+        "caption": caption,
+        "url": image_url,
     }
+    r = requests.post(API_URL, data=data, timeout=45)
+    r.raise_for_status()
+    print(f"✅ WhatsApp DM sent to {name}")
+    return True
 
-    try:
-        response = requests.post(API_URL, data=data)
-        response.raise_for_status()
-        print(f"✅ WhatsApp message sent to {name}")
-        return True
-    except Exception as e:
-        print(f"❌ WhatsApp send failed for {name}: {e}")
-        return False
-def delete_files_in_directory(directory_path):
-        """Deletes all files within a specified directory."""
-        for filename in os.listdir(directory_path):
-            file_path = os.path.join(directory_path, filename)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                print(f"Deleted: {file_path}")
-# ─── Main ─────────────────────────────────────────────────────────────────────
+def send_group_media(group_id, image_url, caption):
+    data = {
+        "api_key": API_KEY,
+        "sender": SENDER_NUMBER,
+        "number": f"{group_id}@g.us",
+        "media_type": "image",
+        "caption": caption,
+        "url": image_url,
+    }
+    r = requests.post(API_URL, data=data, timeout=45)
+    r.raise_for_status()
+    return True
+
+# ---- Main ----
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    delete_files_in_directory(OUTPUT_DIR)
-    
     font_name = ImageFont.truetype(FONT_NAME_PATH, SIZE_NAME)
     font_address = ImageFont.truetype(FONT_ADDRESS_PATH, SIZE_ADDRESS)
     font_role = ImageFont.truetype(FONT_ROLE_PATH, SIZE_ROLE)
 
     today = format_today()
-
-    def normalize_date(date_str):
-        parts = date_str.strip().split('/')
-        if len(parts) == 3:
-            month = str(int(parts[0]))
-            day = str(int(parts[1]))
-            year = parts[2]
-            return f"run{month}/{day}/{year}"
-        return date_str.strip()
-
-    print(f"Looking for birthdays on {today}…")
+    print(f"Looking for anniversaries on {today} …")
 
     with open(CSV_PATH, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            row_date = row["Date"].strip()
-            if normalize_date(row_date) != normalize_date(today):
-                print(f"Skipping {row.get('Name', '[No Name]')} (Date: {row_date})")
+        for row in csv.DictReader(f):
+            if normalize_date(row["Date"]) != normalize_date(today):
                 continue
 
             name = row["Name"].strip()
@@ -143,76 +137,63 @@ def main():
             role = row["Roll"].strip()
             img_url = row["image"].strip()
 
+            wa = digits_only(row.get("WhatsApp", "")) or digits_only(row.get("Phone", ""))
+            if not wa:
+                print(f"⚠️ No WhatsApp/Phone for {name}; skipping DM.")
             safe_name = name.replace(" ", "_")
-            img_path = os.path.join(OUTPUT_DIR, f"{safe_name}_profile.jpg")
+            temp_profile = os.path.join(OUTPUT_DIR, f"{safe_name}_profile.jpg")
 
-            if 'rotary-logo.png' in img_url:
-                print(f"Using noImage.jpg for {name}")
-                img_path = "noImage.jpg"
-            else:
-                try:
-                    print(f"Downloading image for {name}")
-                    download_image(img_url, img_path)
-                except Exception as e:
-                    print(f"❌ Failed to download image for {name}: {e}")
-                    continue
+            try:
+                if "rotary-logo.png" in img_url or not img_url:
+                    temp_profile = "noImage.jpg"
+                else:
+                    download_image(img_url, temp_profile)
+            except Exception as e:
+                print(f"❌ Image download failed for {name}: {e}")
+                temp_profile = "noImage.jpg"
 
-            # Open template
             try:
                 base = Image.open(TEMPLATE_PATH).convert("RGB")
-            except Exception as e:
-                print(f"❌ Failed to open template: {e}")
-                continue
+                draw = ImageDraw.Draw(base)
 
-            draw = ImageDraw.Draw(base)
-
-            # Paste profile photo directly
-            try:
-                profile_img = Image.open(img_path).convert("RGBA")
+                profile_img = Image.open(temp_profile).convert("RGBA")
                 profile_img = profile_img.resize((PHOTO_W, PHOTO_H), Image.Resampling.LANCZOS)
+                alpha = profile_img.getchannel("A") if profile_img.mode == "RGBA" else None
+                base.paste(profile_img, (PHOTO_X, PHOTO_Y), mask=alpha)
 
-                if profile_img.mode == "RGBA":
-                    alpha = profile_img.getchannel("A")
-                    base.paste(profile_img, (PHOTO_X, PHOTO_Y), mask=alpha)
-                else:
-                    base.paste(profile_img, (PHOTO_X, PHOTO_Y))
-            except Exception as e:
-                print(f"❌ Failed to paste profile image for {name}: {e}")
-                continue
-
-            # Draw name, club, role
-            TEXT_X_CENTER = PHOTO_X + PHOTO_W // 2
-            TEXT_Y_START = PHOTO_Y + PHOTO_H + TEXT_MARGIN
-            lines = [name.upper(), club.upper(), role.upper()]
-            fonts = [font_name, font_address, font_role]
-            try:
+                TEXT_X_CENTER = PHOTO_X + PHOTO_W // 2
+                TEXT_Y_START = PHOTO_Y + PHOTO_H + TEXT_MARGIN
+                lines = [name.upper(), club.upper(), role.upper()]
+                fonts = [font_name, font_address, font_role]
                 draw_multiline_centered(draw, lines, TEXT_X_CENTER, TEXT_Y_START, fonts, LINE_SPACING)
-            except Exception as e:
-                print(f"❌ Failed to draw text for {name}: {e}")
-                continue
 
-            # Save final image
-            out_path = os.path.join(OUTPUT_DIR, f"{safe_name}_birthday.jpg")
-            try:
+                out_path = os.path.join(OUTPUT_DIR, f"{safe_name}_anniversary.jpg")
                 base.save(out_path)
-                print(f"✅ Created image: {out_path}")
-                out_url = "https://github.com/amuthap/wedding_automation/blob/main/"+out_path
-                print(f"✅ Created image: {out_url}")
-                out_url = upload_to_picnie(out_path)
-                print(f"✅ Created image: {out_url}")
+                print(f"✅ Created: {out_path}")
 
-                #if not out_url:
-                #    print(f"❌ Upload failed for {name}")
-                #else:
-                #    print(f"✅ Uploaded to Picnie: {out_url}")
-                   # whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
-                whatsapp_number = row.get("WhatsApp") 
-                if whatsapp_number:
-                    send_whatsapp_message(whatsapp_number, out_url, name)
-                else:
-                    print(f"⚠️ No WhatsApp number for {name}")
+                image_url = upload_to_picnie(out_path)
+                if not image_url:
+                    print(f"❌ Upload failed for {name}")
+                    continue
+
+                # DM individual (if we have a number)
+                if wa:
+                    try:
+                        send_whatsapp_message(wa, image_url, name)
+                    except Exception as e:
+                        print(f"❌ DM failed for {name}: {e}")
+
+                # Post to all groups
+                for gid in GROUP_IDS:
+                    try:
+                        send_group_media(gid, image_url, GROUP_CAPTION)
+                        print(f"✅ Group sent: {gid}")
+                        time.sleep(0.5)  # mild rate limit cushion
+                    except Exception as e:
+                        print(f"❌ Group send failed ({gid}): {e}")
+
             except Exception as e:
-                print(f"❌ Failed to save image for {name}: {e}")
+                print(f"❌ Failed for {name}: {e}")
 
     print("🎉 All done!")
 
