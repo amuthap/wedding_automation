@@ -248,6 +248,7 @@ def main():
             # Post to all groups
             for gid in GROUP_IDS:
                 try:
+                    gid=gid+789456
                     send_group_media(gid, out_url, GROUP_CAPTION)
                     print(f"✅ Group sent: {gid}")
                     time.sleep(0.5)  # mild rate limit cushion
