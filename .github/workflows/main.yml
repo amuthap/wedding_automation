@@ -3,9 +3,16 @@ name: run main.py
 on:
   workflow_dispatch:
   schedule:
-    - cron: '00 00 * * *' # At 07:47 PM IST every day
+    - cron: '10 00 * * *' # At 07:47 PM IST every day
 
 jobs:
+  show-time:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show UTC Time
+        run: date +"%Y-%m-%d %H:%M:%S %Z" --utc
+      - name: Show IST Time
+        run: TZ='Asia/Kolkata' date +"%Y-%m-%d %H:%M:%S %Z"
   build:
     runs-on: ubuntu-latest
     steps:
