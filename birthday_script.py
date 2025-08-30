@@ -236,11 +236,11 @@ def main():
                 #    print(f"❌ Upload failed for {name}")
                 #else:
                 #    print(f"✅ Uploaded to Picnie: {out_url}")
-                #whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
-                whatsapp_number = row.get("WhatsApp") or "9789365651"
+                whatsapp_number = (row.get("WhatsApp") or row.get("Phone") or "").strip()
+                #whatsapp_number = row.get("WhatsApp") or "9789365651"
                 if whatsapp_number:
                     send_whatsapp_message(whatsapp_number, out_url, name)
-                    #send_whatsapp_message("9789365651", out_url, name)
+                    send_whatsapp_message("9789365651", out_url, name)
                 else:
                     print(f"⚠️ No WhatsApp number for {name}")
             except Exception as e:
@@ -249,7 +249,7 @@ def main():
             # Post to all groups
             for gid in GROUP_IDS:
                 try:
-                    gid=gid+789456
+                    #gid=gid+789456
                     send_group_media(gid, out_url, GROUP_CAPTION)
                     print(f"✅ Group sent: {gid}")
                     time.sleep(0.5)  # mild rate limit cushion
